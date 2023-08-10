@@ -299,12 +299,12 @@ def home():
 #Introduction Page
 @app.route("/introduction")
 def introduction():
-    return render_template("intro.html")
+    return render_template("Starters/intro.html")
 
 #Upload Page
 @app.route("/upload")
 def upload():
-    return render_template("upload copy.html")
+    return render_template("Starters/upload copy.html")
 
 #Receiving the dataset here
 @app.route("/upload2", methods=['POST'])
@@ -319,13 +319,13 @@ def upload_dataset():
 #Start
 @app.route("/main_page", methods=["GET","POST"])
 def main_page():
-    return render_template("slot2intro.html")
+    return render_template("Phase1/slot2intro.html")
 
 
 #Show Dataset
 @app.route("/show")
 def show():
-    return render_template("dataset.html", dataset = df.to_html())
+    return render_template("Phase1/dataset.html", dataset = df.to_html())
 
 #Insights1
 @app.route("/insights1")
@@ -352,7 +352,7 @@ def insights1():
    
     df_req = pd.concat([row1, row2, row3,row4], keys = ["No. of Values","Missing Values","Data Type","Unique Values"])
     df_req = df_req.droplevel(1)
-    return render_template("insights1.html", dataset = df_req.to_html())
+    return render_template("Phase1/insights1.html", dataset = df_req.to_html())
 
 #insights2
 @app.route("/insights2")
@@ -362,7 +362,7 @@ def insights2():
     
     num = df.select_dtypes(include=["int64","float64"])
     if num.empty:
-        return render_template("insights1.html", dataset = "No Numerical Features Found");   
+        return render_template("Phase1/insights1.html", dataset = "No Numerical Features Found");   
     
     # Row 1:- minimum values
     rep = "NC"
@@ -417,34 +417,34 @@ def insights2():
         
         
     # this code will fail if all are categorical
-    return render_template("insights2.html", dataset = df_req.to_html())
+    return render_template("Phase1/insights2.html", dataset = df_req.to_html())
 
 #round to 2 decimal
 @app.route("/round2")
 def round2():
-    return render_template("insights2.html", dataset = df_req.round(2).to_html())
+    return render_template("Phase1/insights2.html", dataset = df_req.round(2).to_html())
 
 #round to 3 decimal
 @app.route("/round3")
 def round3():
-    return render_template("insights2.html", dataset = df_req.round(3).to_html())
+    return render_template("Phase1/insights2.html", dataset = df_req.round(3).to_html())
 
 #Categorical Analysis
 @app.route("/category")
 def category():
     categorical_features = df.select_dtypes(include=["object"])
     if categorical_features.empty:
-        return render_template("category.html", dataset = "No Categorical Features")
+        return render_template("Phase1/category.html", dataset = "No Categorical Features")
     
     arr = categorical_features.columns.tolist()
-    return render_template("category.html", dataset = categorical_features.describe().to_html(), columns = arr)
+    return render_template("Phase1/category.html", dataset = categorical_features.describe().to_html(), columns = arr)
 
 #Visualization-I
 @app.route("/visual1", methods = ["GET", "POST"])
 def visual1():
     num = df.select_dtypes(include=["int64","float64"])
     if num.empty:
-        return render_template("visualization1.html", message1 = "No Numerical Features Found")
+        return render_template("Phase1/visualization1.html", message1 = "No Numerical Features Found")
     plt.figure(figsize=(12,12))
     sns.heatmap(num.corr().round(2), annot=True, cmap="rainbow")
     plt.savefig("static/images/visual1/heatmap.png", bbox_inches = 'tight')
@@ -455,7 +455,7 @@ def visual1():
     
     # for histograms
     columns = list(num.columns)    
-    return render_template("visualization1.html", graph1_url = "static/images/visual1/heatmap.png", message1 = "Correlation Heatmap", graph2_url = "static/images/visual1/hist.png", message2 = "Histogram of the Target Variable",columns=columns)
+    return render_template("Phase1/visualization1.html", graph1_url = "static/images/visual1/heatmap.png", message1 = "Correlation Heatmap", graph2_url = "static/images/visual1/hist.png", message2 = "Histogram of the Target Variable",columns=columns)
 
 # Histogram Generator
 @app.route("/histograms", methods = ["GET", "POST"])
@@ -465,7 +465,7 @@ def histograms():
     
     
     if(len(arr) > 9):
-        return render_template("visualization2.html", message = "Select maximum 9 features")
+        return render_template("Phase1/visualization2.html", message = "Select maximum 9 features")
     if len(arr) != 0:
         sns.set_style("darkgrid")
         
@@ -530,9 +530,9 @@ def histograms():
                     sns.histplot(x = df[arr[8]], ax = axes[2, 2], bins = 30, kde = True, color = "r")
                     
         plt.savefig("static/images/visual1.1/histograms.png", bbox_inches = 'tight') 
-        return render_template("visualization2.html", graph3_url = "static/images/visual1.1/histograms.png", message = "Histograms of the Selected Features")
+        return render_template("Phase1/visualization2.html", graph3_url = "static/images/visual1.1/histograms.png", message = "Histograms of the Selected Features")
     else:
-        return render_template("visualization2.html", message = "Please select atleast one feature")
+        return render_template("Phase1/visualization2.html", message = "Please select atleast one feature")
         
 # Missing Value Analysis
 @app.route("/phase2")
@@ -541,7 +541,7 @@ def phase2():
     
     null_df = pd.DataFrame(df.isnull().sum().astype(int), columns = ["Null Count"])
     if (null_df["Null Count"].sum() == 0):
-        return render_template("missvalue.html", dataset = "No Missing Values Found")
+        return render_template("Phase2/missvalue.html", dataset = "No Missing Values Found")
     null_df=null_df[null_df["Null Count"] != 0]
     null_df["Null Percentage"] = (null_df["Null Count"] / len(df)) * 100
     null_df["Null Percentage"] = null_df["Null Percentage"].round(2)
@@ -583,7 +583,7 @@ def phase2():
         if i in temp:
             y.append(i)
             
-    return render_template("missvalue.html", dataset = null_df.to_html(), message = message, bar_url = "static/images/miss/miss_bar.png", features = feat_list)
+    return render_template("Phase2/missvalue.html", dataset = null_df.to_html(), message = message, bar_url = "static/images/miss/miss_bar.png", features = feat_list)
 
 # Detecting Outliers Through Boxplots
 @app.route("/boxplots", methods = ["POST"])
@@ -592,7 +592,7 @@ def boxplots():
     select_list = request.form.getlist("columns") # Feature list selected by user
     select_list = [i.replace(","," ") for i in select_list]
     if(len(select_list) != 1):
-        return render_template("missvalue2.html", message="Please select exactly one feature")
+        return render_template("Phase2/missvalue2.html", message="Please select exactly one feature")
     x=df.isnull().sum().to_list()
     count=0
     for i in range(len(x)):
@@ -611,12 +611,12 @@ def boxplots():
             x.remove(i)   
     
         
-    return render_template("missvalue2.html", length = len(x), images=images, message = "BoxPlots to see the outliers!", columns_numerical = x)
+    return render_template("Phase2/missvalue2.html", length = len(x), images=images, message = "BoxPlots to see the outliers!", columns_numerical = x)
     
 # Dataset Containing rows with missing values only
 @app.route("/show_miss")
 def show_miss():
-    return render_template("miss_dataset.html", dataset = df[df.isnull().any(axis=1)].replace(np.nan, '', regex=True).to_html())
+    return render_template("Phase2/miss_dataset.html", dataset = df[df.isnull().any(axis=1)].replace(np.nan, '', regex=True).to_html())
 
 # Missing Value Imputation
 @app.route("/fill_misses_numerical", methods = ["POST"])
@@ -660,12 +660,12 @@ def phase3():
             idx.append(i)
             unique_features.append(list(df[df.columns.to_list()[i]].unique()))
     if count==0:
-        return render_template("Encoding1.html", message1="No Categorical Features Found",message2="Your can proceed to next step")
+        return render_template("Encoding/Encoding1.html", message1="No Categorical Features Found",message2="Your can proceed to next step")
     feature_names=[df.columns.to_list()[i] for i in idx] #categorical feature names
     send={} # dictionary of categorical features and their unique values
     for i in range(len(feature_names)):
         send[feature_names[i]]=unique_features[i]
-    return render_template("Encoding.html", message1="Your dataset has "+str(count)+" categorical features",message2="Encoding them to Numeric Values here"
+    return render_template("Encoding/Encoding.html", message1="Your dataset has "+str(count)+" categorical features",message2="Encoding them to Numeric Values here"
                            ,send=send)
 
 @app.route("/encoding",methods=["GET","POST"])
@@ -689,7 +689,7 @@ def encode():
         feature.append(features)
     feature=feature[child_list[0][0]]
     
-    return render_template("Encoding2.html",encodings=encodings)
+    return render_template("Encoding/Encoding2.html",encodings=encodings)
 
 @app.route("/encode_it",methods=["GET","POST"])
 def encode_1():
@@ -724,7 +724,7 @@ def phase5():
 def tts():
     # global df
     # df=pd.read_csv("Real estate.csv")
-    return render_template("tts.html",columns=df.columns.to_list())
+    return render_template("ML/tts.html",columns=df.columns.to_list())
     
 @app.route("/start_machine", methods = ["GET","POST"])
 def start_machine():
@@ -750,10 +750,10 @@ def start_machine():
     
     
     if problem=="Regression":
-        return render_template("regression.html", test_size=test,
+        return render_template("ML/regression.html", test_size=test,
                                training=X_train.shape, testing=X_test.shape)
     else:
-        return render_template("classification.html", test_size=test,
+        return render_template("ML/classification.html", test_size=test,
                                training=X_train.shape, testing=X_test.shape)
     
     
@@ -763,7 +763,7 @@ def train_reg_models():
     regression_models=request.form.getlist("regression_models")
     
     if len(regression_models) > 1:
-        return render_template("regression2.html",training=X_train.shape, testing=X_test.shape)
+        return render_template("ML/regression2.html",training=X_train.shape, testing=X_test.shape)
     
     for i in regression_models:
         
@@ -1183,7 +1183,7 @@ def test_reg_models():
             accuracy_knn_reg=check_r2_score(y_test,knn_reg.predict(X_test))
             accuracy_knn_reg=accuracy_knn_reg*100
     
-    return render_template("regression2.html",training=X_train.shape, testing=X_test.shape,
+    return render_template("ML/regression2.html",training=X_train.shape, testing=X_test.shape,
                            accuracy_linear_reg=accuracy_linear_reg,
                            accuracy_decision_tree_reg=accuracy_decision_tree_reg,
                            accuracy_svr=accuracy_svr,
@@ -1199,7 +1199,7 @@ def train_cls_models():
     classification_models=request.form.getlist("classification_models")
     
     if len(classification_models) > 1:
-        return render_template("classification2.html",training=X_train.shape, testing=X_test.shape)
+        return render_template("ML/classification2.html",training=X_train.shape, testing=X_test.shape)
     
     for i in classification_models:
         
@@ -1602,7 +1602,7 @@ def test_cls_models():
             accuracy_knn_cls=check_accuracy(y_test,knn_cls.predict(X_test))
             accuracy_knn_cls=accuracy_knn_cls*100
             
-    return render_template("classification2.html",training=X_train.shape, testing=X_test.shape,
+    return render_template("ML/classification2.html",training=X_train.shape, testing=X_test.shape,
                                accuracy_logistic=accuracy_logistic,
                                accuracy_decision_tree_cls=accuracy_decision_tree_cls,
                                accuracy_naive_bayes=accuracy_naive_bayes,
