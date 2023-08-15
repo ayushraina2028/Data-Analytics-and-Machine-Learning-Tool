@@ -12,36 +12,27 @@ warnings.filterwarnings("ignore")
 from StartersPy.starter import starter
 from StartersPy.Phase1  import phase1
 from StartersPy.missvalue import missvalue
+from StartersPy.Encoding import encoder
+from StartersPy.TrainTestSplit import trainTest
+from ModelsPy.modelPage import modelPage
+from ModelsPy.Regressors.LinearRegression import LinearRegression
+from ModelsPy.Classifiers.LogisticRegression import LogisticRegression
 
 # Registering Blue Prints
 app = Flask(__name__)
 app.register_blueprint(starter)
 app.register_blueprint(phase1)
 app.register_blueprint(missvalue)
+app.register_blueprint(encoder)
+app.register_blueprint(trainTest)
+app.register_blueprint(modelPage)
+app.register_blueprint(LinearRegression)
+app.register_blueprint(LogisticRegression)
 
 
 # Extreme Gradient booost
 import xgboost as xbs
 
-# Classification Models
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.svm import SVC
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import AdaBoostClassifier
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.naive_bayes import GaussianNB
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.neighbors import KNeighborsClassifier
-
-# Regression Models
-from sklearn.linear_model import LinearRegression
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.svm import SVR
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.ensemble import AdaBoostRegressor
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.neighbors import KNeighborsRegressor
 
 matplotlib.use('Agg')
 plt=matplotlib.pyplot
@@ -74,42 +65,6 @@ def check_accuracy(y_test, y_pred):
     
     return score
 
-# Linear Regression
-def linear_regression(X_train,y_train):
-    
-    from sklearn.linear_model import LinearRegression
-    linear_regressor=LinearRegression()
-    linear_regressor.fit(X_train,y_train)
-    
-    return linear_regressor
-
-# Ridge Regression (L2 Regularization)
-def ridge_regression(X_train,y_train):
-    
-    from sklearn.linear_model import Ridge
-    ridge_regressor=Ridge()
-    ridge_regressor.fit(X_train,y_train)
-    
-    return ridge_regressor
-
-# Lasso Regression (L1 Regularization)
-def lasso_regression(X_train,y_train):
-    
-    from sklearn.linear_model import Lasso
-    lasso_regressor=Lasso()
-    lasso_regressor.fit(X_train,y_train)
-    
-    return lasso_regressor
-
-
-# Elastic NET  Regression (L1 + L2 Regularization)
-def elastic_net_regression(X_train,y_train):
-    
-    from sklearn.linear_model import ElasticNet
-    elastic_net_regressor=ElasticNet()
-    elastic_net_regressor.fit(X_train,y_train)
-    
-    return elastic_net_regressor
 
 # Decision Tree Regression
 def decision_tree_regression(X_train,y_train):
@@ -147,23 +102,7 @@ def extra_tree_classification(X_train,y_train):
     
     return trees
     
-# Logistic Regression
-def logistic_regression(X_train,y_train,types, random_state, max_iter, multiclass, bias, solver):
-    
-    if bias == "None":
-        bias = None
-    
-    if types=="Binary":
-        from sklearn.linear_model import LogisticRegression
-        log_reg=LogisticRegression(random_state=random_state, max_iter=max_iter, penalty=bias, solver=solver)
-        log_reg.fit(X_train,y_train)
-        return log_reg
-   
-    if types=="MultiClass":
-        from sklearn.linear_model import LogisticRegression
-        log_reg=LogisticRegression(random_state=random_state, max_iter=max_iter, multi_class=multiclass, penalty=bias, solver=solver)
-        log_reg.fit(X_train,y_train)
-        return log_reg
+
     
 #Naive Bias Classifier
 def naive_bayes_classifier(X_train,y_train,types):
@@ -300,64 +239,15 @@ def knn_regression(X_train,y_train,n_neighbors,weights,algorithm,leaf_size,p):
     
     return knn
 
+
             
-#Encoding Categorical Features
-@app.route("/phase3")
-def phase3():
-    
-    global send,df
-    from StartersPy.missvalue import df
-
-    x=df.dtypes.astype(str).to_list()
-    count = 0
-    idx=[] #idx of categorical features
-    unique_features=[]
-    for i in range(len(x)):
-        if x[i]=="object":
-            count+=1;
-            idx.append(i)
-            unique_features.append(list(df[df.columns.to_list()[i]].unique()))
-    if count==0:
-        return render_template("Encoding/Encoding1.html", message1="No Categorical Features Found",message2="Your can proceed to next step")
-    feature_names=[df.columns.to_list()[i] for i in idx] #categorical feature names
-    send={} # dictionary of categorical features and their unique values
-    for i in range(len(feature_names)):
-        send[feature_names[i]]=unique_features[i]
-    return render_template("Encoding/Encoding.html", message1="Your dataset has "+str(count)+" categorical features",message2="Encoding them to Numeric Values here"
-                           ,send=send)
-
-@app.route("/encoding",methods=["GET","POST"])
-def encode():
-    global encodings,feature
-    encoded_values=[] #list of encoded values
-    array=[] #list of categorical features
-    feature=[] #list of categorical features
-    for features,values in send.items():
-        array.append(send[features])
-        encoded_values.append([request.form.get(f"{value}") for value in values])
-        
-    encoded_values=[[int(x) if x is not None else None for x in sub_list] for sub_list in encoded_values]
-    child_list=[] #list of index and encoded values
-    x=[sublist for sublist in encoded_values if None not in sublist]
-    child_list.append([encoded_values.index(x[0]),x[0]])
-    encodings={} #dictionary of encoded values
-    for i in range(len(child_list[0][1])):
-        encodings[array[child_list[0][0]][i]]=child_list[0][1][i]
-    for features in send.keys():
-        feature.append(features)
-    feature=feature[child_list[0][0]]
-    
-    return render_template("Encoding/Encoding2.html",encodings=encodings)
-
-@app.route("/encode_it",methods=["GET","POST"])
-def encode_1():
-    global df1
-    df[feature]=[encodings[x] for x in df[feature]]
-    df1= df.copy()
-    return redirect(url_for("phase3"))
 
 @app.route("/download")
 def download():
+    
+    global send,df
+    from StartersPy.Encoding import df
+    
     csv_file=io.StringIO()
     df.to_csv(csv_file,index=False)
     
@@ -368,146 +258,26 @@ def download():
         mimetype='text/csv'
     )
 
-@app.route("/phase4")
-def phase4():
-    return render_template("EDA.html")
+# @app.route("/phase4")
+# def phase4():
+#     return render_template("EDA.html")
 
 
-@app.route("/phase5")
-def phase5():
+# @app.route("/phase5")
+# def phase5():
     
-    return render_template("ML_intro.html")
+#     return render_template("ML_intro.html")
+    
 
-@app.route("/show_tts")
-def tts():
-    # global df
-    # df=pd.read_csv("Real estate.csv")
-    return render_template("ML/tts.html",columns=df.columns.to_list())
     
-@app.route("/start_machine", methods = ["GET","POST"])
-def start_machine():
-    global X_train,X_test,y_train,y_test,training,target
-    test=request.form.get("test_size")
-    problem=request.form.get("problem")
-    
-    target = request.form.getlist('columns')
-    target = [i.replace(","," ") for i in target]
-    target=target[0]
-    
-    training = request.form.getlist('columns1')
-    training = [i.replace(","," ") for i in training]
-    
-    # Separating Independent and Dependent Features
-    X = df[training]
-    y=df[target]
-    
-    
-    #splitting
-    from sklearn.model_selection import train_test_split
-    X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=float(test),random_state=42)
-    
-    
-    if problem=="Regression":
-        return render_template("ML/regression.html", test_size=test,
-                               training=X_train.shape, testing=X_test.shape)
-    else:
-        return render_template("ML/classification.html", test_size=test,
-                               training=X_train.shape, testing=X_test.shape)
-    
-    
-@app.route("/train_reg_models", methods = ["GET","POST"])
-def train_reg_models():
-    global regression_models
-    regression_models=request.form.getlist("regression_models")
-    
-    if len(regression_models) > 1:
-        return render_template("ML/regression2.html",training=X_train.shape, testing=X_test.shape)
-    
-    for i in regression_models:
-        
-        if i == "linear_reg":
-            return render_template("models/LinearRegression/LinearRegression.html",
-                                   target=target, trains=training)
-        if i == "decision_tree_reg":
-            return render_template("models/DecisionTree/DecisionTreeRegressor.html",
-                                   target=target, trains=training)
-        if i == "svr":
-            return render_template("models/SupportVectorMachines/SupportVectorRegressor.html",
-                                   target=target, trains=training)
-        if i == "random_forest_reg":
-            return render_template("models/RandomForest/RandomForestRegressor.html",
-                                   target=target, trains=training)
-        if i == "adaboost_reg":
-            return render_template("models/Boosting/Regressors/AdaboostRegressor.html",
-                                   target=target, trains=training)
-        if i == "gradientboost_reg":
-            return render_template("models/Boosting/Regressors/GradientBoostRegressor.html",
-                                   target=target, trains=training)
-        if i == "xgboost_reg":
-            return render_template("models/Boosting/Regressors/XgboostRegressor.html",
-                                   target=target, trains=training)
-            
-        if i == "knn_reg":
-            return render_template("models/KNearestNeighbours/KNNRegressor.html",
-                                   target=target, trains=training)
-        
 
-@app.route("/train_linear_reg", methods = ["GET","POST"])
-def train_linear_reg():
-    global linear_regressor
-    bias=request.form.get("bias")
-    
-    # is_scale=request.form.get("scaler")
-    # if is_scale=="yes":
-    #     X_train,X_test=scale_down(X_train,X_test)
-    # Above piece of Code is not Working and i do not know why
-    
-    if bias == "L1 Regularization":
-        linear_regressor=lasso_regression(X_train,y_train)
-        return render_template("models/LinearRegression/LinearRegression.html",
-                           target=target, trains=training,train_status="Model is trained Successfully",
-                           message="Click Here",columns = training,model = "linear_reg")
-        
-    elif bias == "L2 Regularization":
-        linear_regressor=ridge_regression(X_train,y_train)
-        return render_template("models/LinearRegression/LinearRegression.html",
-                           target=target, trains=training,train_status="Model is trained Successfully",
-                           message="Click Here",columns = training,model = "linear_reg")
-    elif bias == "Both":
-        linear_regressor=ridge_regression(X_train,y_train)
-        return render_template("models/LinearRegression/LinearRegression.html",
-                           target=target, trains=training,train_status="Model is trained Successfully",
-                           message="Click Here",columns = training,model = "linear_reg")
-    else:
-        linear_regressor=linear_regression(X_train,y_train)
-        return render_template("models/LinearRegression/LinearRegression.html",
-                            target=target, trains=training,train_status="Model is trained Successfully",
-                            columns = training,model = "linear_reg")
-
-@app.route("/test_linear_reg", methods = ["GET","POST"])
-def test_linear_reg():
-    
-    score=check_r2_score(y_test,linear_regressor.predict(X_test))
-    score=score*100
-    return jsonify({"score":score})
-                   
-@app.route("/visualize_linear_reg", methods = ["GET","POST"])
-def visualize_linear_reg():
-    plt.clf()
-    plt.figure(figsize=(15,15))
-    plt.scatter(X_train,y_train,color="red",s=2)
-    plt.plot(X_train,linear_regressor.predict(X_train),color="blue")
-    plt.title("Linear Regression")
-    plt.xlabel("Independent Variable")
-    plt.ylabel("Dependent Variable")
-    plt.savefig("static/images/models/LinearRegression/linear_reg.png", bbox_inches = 'tight')
-    
-    return render_template("models/LinearRegression/LinearRegression2.html",
-                           graph1="static/images/models/LinearRegression/linear_reg.png")
 
 
 @app.route("/train_decision_tree_reg", methods = ["GET","POST"])
 def train_decision_tree_reg():
+    
+    global X_train,X_test,y_train,y_test,target,training
+    from ModelsPy.modelPage import X_train,X_test,y_train,y_test,target,training
 
     global decision_tree_regressor
     tree=request.form.get("tree")
@@ -788,148 +558,7 @@ def test_knn_regressor():
         return jsonify({"score":score})
 
     
-@app.route("/test_reg_models", methods = ["GET","POST"])
-def test_reg_models():
-    
-    for i in regression_models:
-        
-        if i == "linear_reg":
-            lin_reg = LinearRegression()
-            lin_reg.fit(X_train,y_train)
-            accuracy_linear_reg = check_r2_score(y_test,lin_reg.predict(X_test))
-            accuracy_linear_reg = accuracy_linear_reg*100
-            
-        elif i == "decision_tree_reg":
-            dt_reg = DecisionTreeRegressor()
-            dt_reg.fit(X_train,y_train)
-            accuracy_decision_tree_reg=check_r2_score(y_test,dt_reg.predict(X_test))
-            accuracy_decision_tree_reg=accuracy_decision_tree_reg*100
-            
-        elif i == "svr":
-            svr = SVR()
-            svr.fit(X_train,y_train)
-            accuracy_svr=check_r2_score(y_test,svr.predict(X_test))
-            accuracy_svr=accuracy_svr*100
-            
-        elif i == "random_forest_reg":
-            rf_reg = RandomForestRegressor()
-            rf_reg.fit(X_train,y_train)
-            accuracy_random_forest_reg=check_r2_score(y_test,rf_reg.predict(X_test))
-            accuracy_random_forest_reg=accuracy_random_forest_reg*100
-            
-        elif i == "adaboost_reg":
-            ada_reg = AdaBoostRegressor()
-            ada_reg.fit(X_train,y_train)
-            accuracy_adaboost_reg=check_r2_score(y_test,ada_reg.predict(X_test))
-            accuracy_adaboost_reg=accuracy_adaboost_reg*100
-            
-        elif i == "gradientboost_reg":
-            gb_reg = GradientBoostingRegressor()
-            gb_reg.fit(X_train,y_train)
-            accuracy_gradient_boost_reg=check_r2_score(y_test,gb_reg.predict(X_test))
-            accuracy_gradient_boost_reg=accuracy_gradient_boost_reg*100
-            
-        elif i == "xgboost_reg":
-            xgb_reg = xbs.XGBRegressor()
-            xgb_reg.fit(X_train,y_train)
-            accuracy_xgboost_reg=check_r2_score(y_test,xgb_reg.predict(X_test))
-            accuracy_xgboost_reg=accuracy_xgboost_reg*100
-            
-        elif i == "knn_reg":
-            knn_reg = KNeighborsRegressor()
-            knn_reg.fit(X_train,y_train)
-            accuracy_knn_reg=check_r2_score(y_test,knn_reg.predict(X_test))
-            accuracy_knn_reg=accuracy_knn_reg*100
-    
-    return render_template("ML/regression2.html",training=X_train.shape, testing=X_test.shape,
-                           accuracy_linear_reg=accuracy_linear_reg,
-                           accuracy_decision_tree_reg=accuracy_decision_tree_reg,
-                           accuracy_svr=accuracy_svr,
-                           accuracy_random_forest_reg=accuracy_random_forest_reg,
-                           accuracy_adaboost_reg=accuracy_adaboost_reg,
-                           accuracy_gradient_boost_reg=accuracy_gradient_boost_reg,
-                           accuracy_xgboost_reg=accuracy_xgboost_reg,
-                           accuracy_knn_reg=accuracy_knn_reg)
-            
-@app.route("/train_cls_models", methods = ["GET","POST"])
-def train_cls_models():
-    global classification_models
-    classification_models=request.form.getlist("classification_models")
-    
-    if len(classification_models) > 1:
-        return render_template("ML/classification2.html",training=X_train.shape, testing=X_test.shape)
-    
-    for i in classification_models:
-        
-        if i == "decision_tree_cls":
-            return render_template("models/DecisionTree/DecisionTreeClassifier.html",
-                                   target=target, trains=training)
-        if i== "logistic":
-            return render_template("models/LogisticalRegression/Logistic.html",
-                                      target=target, trains=training)
-        if i== "naive_bayes":
-            return render_template("models/NaiveBayes/NaiveBayes.html",
-                                      target=target, trains=training)
-        if i == "svc":
-            return render_template("models/SupportVectorMachines/SupportVectorClassifier.html",
-                                      target=target, trains=training)
-        if i == "random_forest_cls":
-            return render_template("models/RandomForest/RandomForestClassifier.html",
-                                      target=target, trains=training)
-        if i == "adaboost":
-            return render_template("models/Boosting/Classifiers/AdaboostClassifier.html",
-                                      target=target, trains=training)
-        if i == "gradientboost":
-            return render_template("models/Boosting/Classifiers/GradientBoostClassifier.html",
-                                      target=target, trains=training)
-        if i == "knn_cls":
-            return render_template("models/KNearestNeighbours/KNNClassifier.html",
-                                      target=target, trains=training)
-            
-@app.route("/train_logistic_regression_classifier", methods = ["GET","POST"])
-def train_logistic_regression_classifier():
-    global logistic_regression_classifier
-    
-    classify = request.form.get("logistic")
-    random_state = request.form.get("random_state")
-    max_iter = request.form.get("max_iter")
-    multiclass = request.form.get("multiclass")
-    bias = request.form.get("bias")
-    solver = request.form.get("solver")
-    
-    
-    if not random_state:
-        random_state=None
-    else:
-        random_state = int(random_state)
-        
-        
-    if not max_iter:
-        max_iter=100
-    else:
-        max_iter = int(max_iter)
 
-    if not multiclass:
-        multiclass="auto"
-    if not bias:
-        bias = "l2"
-    if not solver:
-        solver="lbfgs"
-        
-    
-    
-    logistic_regression_classifier=logistic_regression(X_train,y_train,types=classify, random_state=random_state, max_iter=max_iter, multiclass=multiclass, bias=bias, solver=solver)
-    return render_template("models/LogisticalRegression/Logistic.html",
-                            target=target, trains=training,train_status=f"{classify} Logistic Model is trained Successfully",
-                            columns=training,model="logistic_cls")
-    
-
-@app.route("/test_logistical_regression_classifier", methods = ["GET","POST"])
-def test_logistical_regression_classifier():
-    
-    score=check_accuracy(y_test,logistic_regression_classifier.predict(X_test))
-    score=score*100
-    return jsonify({"score":score})
 
 @app.route("/train_naive_bayes_classifier", methods = ["GET","POST"])
 def train_native_bayes_classifier():
@@ -1193,85 +822,12 @@ def test_knn_classifier():
     return jsonify({"score":score})
     
 
-@app.route("/test_cls_models", methods = ["GET","POST"])
-def test_cls_models():
-    
-    for i in classification_models:
-        
-        if i == "logistic":
-            
-            if len(y_train.unique()) > 2:
-                log_cls = LogisticRegression(multi_class="ovr")
-                log_cls.fit(X_train,y_train)
-                accuracy_logistic = check_accuracy(y_test,log_cls.predict(X_test))
-                accuracy_logistic=accuracy_logistic*100
-            else:
-                log_cls = LogisticRegression()
-                log_cls.fit(X_train,y_train)
-                accuracy_logistic = check_accuracy(y_test,log_cls.predict(X_test))
-                accuracy_logistic=accuracy_logistic*100
-            
-        elif i == "decision_tree_cls":
-            dt_cls = DecisionTreeClassifier()
-            dt_cls.fit(X_train,y_train)
-            accuracy_decision_tree_cls=check_accuracy(y_test,dt_cls.predict(X_test))
-            accuracy_decision_tree_cls=accuracy_decision_tree_cls*100
-            
-        elif i == "naive_bayes":
-            
-            if len(y_train.unique()) > 2:
-                nb_cls = MultinomialNB()
-                nb_cls.fit(X_train,y_train)
-                accuracy_naive_bayes=check_accuracy(y_test,nb_cls.predict(X_test))
-                accuracy_naive_bayes=accuracy_naive_bayes*100
-            else:
-                nb_cls = GaussianNB()
-                nb_cls.fit(X_train,y_train)
-                accuracy_naive_bayes=check_accuracy(y_test,nb_cls.predict(X_test))
-                accuracy_naive_bayes=accuracy_naive_bayes*100
-        
-        elif i == "svc":
-            svc_cls = SVC()
-            svc_cls.fit(X_train,y_train)
-            accuracy_svc=check_accuracy(y_test,svc_cls.predict(X_test))
-            accuracy_svc=accuracy_svc*100
-        
-        elif i == "random_forest_cls":
-            rf_cls = RandomForestClassifier()
-            rf_cls.fit(X_train,y_train)
-            accuracy_random_forest_cls=check_accuracy(y_test,rf_cls.predict(X_test))
-            accuracy_random_forest_cls=accuracy_random_forest_cls*100
-            
-        elif i == "adaboost":
-            adaboost_cls = AdaBoostClassifier()
-            adaboost_cls.fit(X_train,y_train)
-            accuracy_adaboost=check_accuracy(y_test,adaboost_cls.predict(X_test))
-            accuracy_adaboost=accuracy_adaboost*100
-            
-        elif i == "gradientboost":
-            gradientboost_cls = GradientBoostingClassifier()
-            gradientboost_cls.fit(X_train,y_train)
-            accuracy_gradientboost=check_accuracy(y_test,gradientboost_cls.predict(X_test))
-            accuracy_gradientboost=accuracy_gradientboost*100
-            
-        elif i == "knn_cls":
-            knn_cls = KNeighborsClassifier()
-            knn_cls.fit(X_train,y_train)
-            accuracy_knn_cls=check_accuracy(y_test,knn_cls.predict(X_test))
-            accuracy_knn_cls=accuracy_knn_cls*100
-            
-    return render_template("ML/classification2.html",training=X_train.shape, testing=X_test.shape,
-                               accuracy_logistic=accuracy_logistic,
-                               accuracy_decision_tree_cls=accuracy_decision_tree_cls,
-                               accuracy_naive_bayes=accuracy_naive_bayes,
-                               accuracy_svc=accuracy_svc,
-                               accuracy_random_forest_cls=accuracy_random_forest_cls,
-                               accuracy_adaboost=accuracy_adaboost,
-                               accuracy_gradientboost=accuracy_gradientboost,
-                               accuracy_knn_cls=accuracy_knn_cls)
-
 @app.route("/graph", methods = ["GET","POST"])
 def grapher():
+
+    global send,df
+    from StartersPy.Encoding import df
+    
     columns = df.columns.to_list()
     return render_template("/Graph/main.html",columns=columns)
 
@@ -1441,14 +997,6 @@ def gbarplot():
     
     return render_template("Graph/graph3.html", graph = "static/images/GraphTool/gbarplot.png", message = "Grouped bar plot plotted successfully")
 
-# Predictions Regressions
-@app.route("/predict_linear_reg", methods = ["GET","POST"])
-def predict_linear_reg():
-    
-    data = request.form.getlist("data")
-    data = [float(d) for d in data]
-    score = linear_regressor.predict([data])
-    return render_template("Prediction/prediction.html", modelname = "Linear Regression", prediction=score[0])    
 
 @app.route("/predict_decision_tree_reg", methods = ["GET","POST"])
 def predict_decision_tree_reg():
@@ -1506,14 +1054,6 @@ def predict_xgboost_reg():
     score = xgboost_regressor.predict([data])
     return render_template("Prediction/prediction.html", modelname = "XGBoost Regression", prediction=score[0])
 
-# Prediction classification all models
-@app.route("/predict_logistic_cls", methods = ["GET","POST"])
-def predict_logistic_reg():
-    
-    data = request.form.getlist("data")
-    data = [float(d) for d in data]
-    score = logistic_regression_classifier.predict([data])
-    return render_template("Prediction/prediction.html", modelname = "Logistic Regression", prediction=score[0])
 
 @app.route("/predict_knn_cls", methods = ["GET","POST"])
 def predict_knn_cls():
