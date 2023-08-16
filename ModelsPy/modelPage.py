@@ -109,10 +109,11 @@ def train_reg_models():
         
 @modelPage.route("/test_cls_models", methods = ["GET","POST"])
 def test_cls_models():
-    
+    from ModelsPy.Accuracies import check_accuracy
     for i in classification_models:
         
         if i == "logistic":
+            from sklearn.linear_model import LogisticRegression
             
             if len(y_train.unique()) > 2:
                 log_cls = LogisticRegression(multi_class="ovr")
@@ -126,12 +127,17 @@ def test_cls_models():
                 accuracy_logistic=accuracy_logistic*100
             
         elif i == "decision_tree_cls":
+            
+            from sklearn.tree import DecisionTreeClassifier
+                        
             dt_cls = DecisionTreeClassifier()
             dt_cls.fit(X_train,y_train)
             accuracy_decision_tree_cls=check_accuracy(y_test,dt_cls.predict(X_test))
             accuracy_decision_tree_cls=accuracy_decision_tree_cls*100
             
         elif i == "naive_bayes":
+            
+            from sklearn.naive_bayes import GaussianNB, MultinomialNB
             
             if len(y_train.unique()) > 2:
                 nb_cls = MultinomialNB()
@@ -145,30 +151,45 @@ def test_cls_models():
                 accuracy_naive_bayes=accuracy_naive_bayes*100
         
         elif i == "svc":
+            
+            from sklearn.svm import SVC
+            
             svc_cls = SVC()
             svc_cls.fit(X_train,y_train)
             accuracy_svc=check_accuracy(y_test,svc_cls.predict(X_test))
             accuracy_svc=accuracy_svc*100
         
         elif i == "random_forest_cls":
+            
+            from sklearn.ensemble import RandomForestClassifier
+                
             rf_cls = RandomForestClassifier()
             rf_cls.fit(X_train,y_train)
             accuracy_random_forest_cls=check_accuracy(y_test,rf_cls.predict(X_test))
             accuracy_random_forest_cls=accuracy_random_forest_cls*100
             
         elif i == "adaboost":
+            
+            from sklearn.ensemble import AdaBoostClassifier
+            
             adaboost_cls = AdaBoostClassifier()
             adaboost_cls.fit(X_train,y_train)
             accuracy_adaboost=check_accuracy(y_test,adaboost_cls.predict(X_test))
             accuracy_adaboost=accuracy_adaboost*100
             
         elif i == "gradientboost":
+            
+            from sklearn.ensemble import GradientBoostingClassifier
+            
             gradientboost_cls = GradientBoostingClassifier()
             gradientboost_cls.fit(X_train,y_train)
             accuracy_gradientboost=check_accuracy(y_test,gradientboost_cls.predict(X_test))
             accuracy_gradientboost=accuracy_gradientboost*100
             
         elif i == "knn_cls":
+            
+            from sklearn.neighbors import KNeighborsClassifier
+            
             knn_cls = KNeighborsClassifier()
             knn_cls.fit(X_train,y_train)
             accuracy_knn_cls=check_accuracy(y_test,knn_cls.predict(X_test))
@@ -189,49 +210,75 @@ def test_reg_models():
     
     for i in regression_models:
         
+        from ModelsPy.Accuracies import check_r2_score
+        
         if i == "linear_reg":
+            
+            from sklearn.linear_model import LinearRegression
+            
             lin_reg = LinearRegression()
             lin_reg.fit(X_train,y_train)
             accuracy_linear_reg = check_r2_score(y_test,lin_reg.predict(X_test))
             accuracy_linear_reg = accuracy_linear_reg*100
             
         elif i == "decision_tree_reg":
+            
+            from sklearn.tree import DecisionTreeRegressor
+            
             dt_reg = DecisionTreeRegressor()
             dt_reg.fit(X_train,y_train)
             accuracy_decision_tree_reg=check_r2_score(y_test,dt_reg.predict(X_test))
             accuracy_decision_tree_reg=accuracy_decision_tree_reg*100
             
         elif i == "svr":
+            
+            from sklearn.svm import SVR
+            
             svr = SVR()
             svr.fit(X_train,y_train)
             accuracy_svr=check_r2_score(y_test,svr.predict(X_test))
             accuracy_svr=accuracy_svr*100
             
         elif i == "random_forest_reg":
+            
+            from sklearn.ensemble import RandomForestRegressor
+            
             rf_reg = RandomForestRegressor()
             rf_reg.fit(X_train,y_train)
             accuracy_random_forest_reg=check_r2_score(y_test,rf_reg.predict(X_test))
             accuracy_random_forest_reg=accuracy_random_forest_reg*100
             
         elif i == "adaboost_reg":
+            
+            from sklearn.ensemble import AdaBoostRegressor
+            
             ada_reg = AdaBoostRegressor()
             ada_reg.fit(X_train,y_train)
             accuracy_adaboost_reg=check_r2_score(y_test,ada_reg.predict(X_test))
             accuracy_adaboost_reg=accuracy_adaboost_reg*100
             
         elif i == "gradientboost_reg":
+            
+            from sklearn.ensemble import GradientBoostingRegressor
+            
             gb_reg = GradientBoostingRegressor()
             gb_reg.fit(X_train,y_train)
             accuracy_gradient_boost_reg=check_r2_score(y_test,gb_reg.predict(X_test))
             accuracy_gradient_boost_reg=accuracy_gradient_boost_reg*100
             
         elif i == "xgboost_reg":
+            
+            import xgboost as xbs
+            
             xgb_reg = xbs.XGBRegressor()
             xgb_reg.fit(X_train,y_train)
             accuracy_xgboost_reg=check_r2_score(y_test,xgb_reg.predict(X_test))
             accuracy_xgboost_reg=accuracy_xgboost_reg*100
             
         elif i == "knn_reg":
+            
+            from sklearn.neighbors import KNeighborsRegressor
+            
             knn_reg = KNeighborsRegressor()
             knn_reg.fit(X_train,y_train)
             accuracy_knn_reg=check_r2_score(y_test,knn_reg.predict(X_test))
