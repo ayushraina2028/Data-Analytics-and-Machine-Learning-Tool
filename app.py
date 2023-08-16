@@ -16,7 +16,17 @@ from StartersPy.Encoding import encoder
 from StartersPy.TrainTestSplit import trainTest
 from ModelsPy.modelPage import modelPage
 from ModelsPy.Regressors.LinearRegression import LinearRegression
+from ModelsPy.Regressors.DecisionTreeReg import DecisionTreeRegression
+from ModelsPy.Regressors.SupportVectorReg import SupportVectorRegression
+from ModelsPy.Regressors.RandomForest import RandomForestRegression
+from ModelsPy.Regressors.AdaboostReg import AdaboostRegression
+from ModelsPy.Regressors.GradientBoostReg import GradientBoostRegression
+from ModelsPy.Regressors.XGBoostReg import XGBoostRegression
+from ModelsPy.Regressors.KNNReg import KNNRegression
+
 from ModelsPy.Classifiers.LogisticRegression import LogisticRegression
+
+
 
 # Registering Blue Prints
 app = Flask(__name__)
@@ -28,10 +38,14 @@ app.register_blueprint(trainTest)
 app.register_blueprint(modelPage)
 app.register_blueprint(LinearRegression)
 app.register_blueprint(LogisticRegression)
+app.register_blueprint(DecisionTreeRegression)
+app.register_blueprint(SupportVectorRegression)
+app.register_blueprint(RandomForestRegression)
+app.register_blueprint(AdaboostRegression)
+app.register_blueprint(GradientBoostRegression)
+app.register_blueprint(XGBoostRegression)
+app.register_blueprint(KNNRegression)
 
-
-# Extreme Gradient booost
-import xgboost as xbs
 
 
 matplotlib.use('Agg')
@@ -66,15 +80,6 @@ def check_accuracy(y_test, y_pred):
     return score
 
 
-# Decision Tree Regression
-def decision_tree_regression(X_train,y_train):
-    
-    from sklearn.tree import DecisionTreeRegressor
-    tree=DecisionTreeRegressor(random_state=42)
-    tree.fit(X_train,y_train)
-    
-    return tree
-
 # Decision Tree Classification
 def decision_tree_classification(X_train,y_train):
     
@@ -84,14 +89,6 @@ def decision_tree_classification(X_train,y_train):
     
     return tree
 
-# Extra Tree Regression
-def extra_tree_regression(X_train,y_train):
-    
-    from sklearn.tree import ExtraTreeRegressor
-    trees=ExtraTreeRegressor(random_state=42)
-    trees.fit(X_train,y_train)
-    
-    return trees
 
 # Extra Tree Classification
 def extra_tree_classification(X_train,y_train):
@@ -146,14 +143,7 @@ def support_vector_classification(X_train,y_train,random_state,max_iter,kernel,p
     
     return svc
 
-#Support Vector Regression
-def support_vector_regression(X_train,y_train,epsilon,max_iter,kernel,parameter,gamma):
-    
-    from sklearn.svm import SVR
-    svr = SVR(kernel=kernel,epsilon=epsilon, C=parameter, gamma=gamma, max_iter=max_iter)
-    svr.fit(X_train,y_train)
-    
-    return svr
+
 
 # Random Forest Classification
 def random_forest_classification(X_train,y_train,n_estimators,max_depth,max_features,criterion,bootstrap,oob_score):
@@ -166,16 +156,6 @@ def random_forest_classification(X_train,y_train,n_estimators,max_depth,max_feat
     
     return forest
 
-# Random Forest Regression
-def random_forest_regression(X_train,y_train,n_estimators,max_depth,max_features,criterion,bootstrap,oob_score):
-    
-    if max_depth == "None":
-        max_depth = None 
-    from sklearn.ensemble import RandomForestRegressor
-    forest = RandomForestRegressor(n_estimators=n_estimators, max_depth=max_depth, max_features=max_features, criterion=criterion, bootstrap=bootstrap, oob_score=oob_score)
-    forest.fit(X_train,y_train)
-    
-    return forest
 
 # Adaboost Classification
 def adaboost_classification(X_train,y_train,n_estimators,learning_rate,algorithm):
@@ -195,14 +175,7 @@ def gradientboost_classification(X_train,y_train,n_estimators,learning_rate,max_
     
     return gradient_boost
 
-# Adaboost Regression
-def adaboost_regression(X_train,y_train,n_estimators,learning_rate,loss):
-    
-    from sklearn.ensemble import AdaBoostRegressor
-    adaboost = AdaBoostRegressor(n_estimators=n_estimators, learning_rate=learning_rate, loss=loss)
-    adaboost.fit(X_train,y_train)
-    
-    return adaboost
+
 
 # Gradient Boost Regressor
 def gradient_boost_regression(X_train,y_train,n_estimators, learning_rate, loss, criterion, max_depth, max_features):
@@ -213,28 +186,13 @@ def gradient_boost_regression(X_train,y_train,n_estimators, learning_rate, loss,
     
     return gradient_boost
 
-# XGBoost Regressor
-def xgboost_regression(X_train,y_train):
-    
-    xgb_reg=xbs.XGBRegressor()
-    xgb_reg.fit(X_train,y_train)
-    
-    return xgb_reg
+
 
 # KNN Classifier
 def knn_classification(X_train,y_train,n_neighbors,weights,algorithm,leaf_size,p):
     
     from sklearn.neighbors import KNeighborsClassifier
     knn = KNeighborsClassifier(n_neighbors=n_neighbors, weights=weights, algorithm=algorithm, leaf_size=leaf_size, p=p)
-    knn.fit(X_train,y_train)
-    
-    return knn
-
-# KNN Regressor
-def knn_regression(X_train,y_train,n_neighbors,weights,algorithm,leaf_size,p):
-    
-    from sklearn.neighbors import KNeighborsRegressor
-    knn = KNeighborsRegressor(n_neighbors=n_neighbors, weights=weights, algorithm=algorithm, leaf_size=leaf_size, p=p)
     knn.fit(X_train,y_train)
     
     return knn
@@ -273,291 +231,14 @@ def download():
 
 
 
-@app.route("/train_decision_tree_reg", methods = ["GET","POST"])
-def train_decision_tree_reg():
-    
-    global X_train,X_test,y_train,y_test,target,training
-    from ModelsPy.modelPage import X_train,X_test,y_train,y_test,target,training
 
-    global decision_tree_regressor
-    tree=request.form.get("tree")
-    
-    if tree == "ExtraTreeRegressor":
-        decision_tree_regressor=extra_tree_regression(X_train,y_train)
-        return render_template("models/DecisionTree/DecisionTreeRegressor.html",
-                            target=target, trains=training,train_status="ExtraTree is trained Successfully")    
-    else:
-        decision_tree_regressor=decision_tree_regression(X_train,y_train)
-        return render_template("models/DecisionTree/DecisionTreeRegressor.html",
-                            target=target, trains=training,train_status="Model is trained Successfully",
-                            columns=training,model="decision_tree_reg")
-        
-@app.route("/test_decision_tree_reg", methods = ["GET","POST"])
-def test_decision_tree_reg():
-    
-    score=check_r2_score(y_test,decision_tree_regressor.predict(X_test))
-    score=score*100
-    return jsonify({"score":score})
 
-@app.route("/train_support_vector_regressor", methods = ["GET","POST"])
-def train_support_vector_regressor():
-    global support_vector_regressor
-    
-   
-    epsilon = request.form.get("epsilon")
-    max_iter = request.form.get("max_iter")
-    kernel = request.form.get("kernel")
-    parameter = request.form.get("parameter")
-    gamma = request.form.get("gamma")
-    
-    if not epsilon:
-        epsilon=0.1
-    else:
-        epsilon = float(epsilon)
-        
-    if not max_iter:
-        max_iter=-1
-    else:
-        max_iter = int(max_iter)
 
-    if not kernel:
-        kernel = "rbf"
-        
-    if not parameter:
-        parameter = 1.0
-    else:
-        parameter = float(parameter)
-        
-    if not gamma:
-        gamma = "scale"
-    elif gamma == "auto":
-        gamma = "auto"
-    else:
-        gamma = float(gamma)
-    
-    support_vector_regressor = support_vector_regression(X_train,y_train,epsilon=epsilon, max_iter=max_iter, kernel=kernel, parameter=parameter, gamma=gamma)
-    return render_template("models/SupportVectorMachines/SupportVectorRegressor.html",
-                           target=target, trains=training,train_status="Model is trained Successfully",
-                           columns=training,model="support_vector_reg")
 
-@app.route("/test_support_vector_regressor", methods = ["GET","POST"])
-def test_support_vector_regressor():
-    
-    score=check_r2_score(y_test,support_vector_regressor.predict(X_test))
-    score=score*100
-    return jsonify({"score":score})
 
-@app.route("/train_random_forest_regressor", methods = ["GET","POST"])
-def train_random_forest_regressor():
-    global random_forest_regressor
-    
-    n_estimators = request.form.get("n_estimators")
-    max_depth = request.form.get("max_depth")
-    max_features = request.form.get("max_features")
-    criterion = request.form.get("criterion")
-    bootstrap = request.form.get("bootstrap")
-    oob_score = request.form.get("oob")
-    
-    
-    if not n_estimators:
-        n_estimators=100
-    else:
-        n_estimators = int(n_estimators)
-        
-    if not max_depth:
-        max_depth=None
-    else: 
-        max_depth = int(max_depth)
-        
-    if not max_features:
-        max_features=1
-    elif max_features == "log2":
-        max_features = "log2"
-    elif max_features == "None":
-        max_features = None
-    elif max_features == "sqrt":
-        max_features = "sqrt"
-    else:
-        max_features = float(max_features)
-        
-    if not criterion:
-        criterion="squared_error"
-    
-    if not bootstrap:
-        bootstrap=True
-    else:
-        bootstrap=False
-        
-    if not oob_score:
-        oob_score=False
-    else:
-        oob_score=True
-    
-    random_forest_regressor = random_forest_regression(X_train,y_train,n_estimators=n_estimators, max_depth=max_depth, max_features=max_features, criterion=criterion, bootstrap=bootstrap, oob_score=oob_score)
-    return render_template("models/RandomForest/RandomForestRegressor.html",
-                           training=X_train.shape, target=X_test.shape,train_status="Model is trained Successfully",
-                           columns=training,model="random_forest_reg")
 
-@app.route("/test_random_forest_regressor", methods = ["GET","POST"])
-def test_random_forest_regressor():
-    
-    score=check_r2_score(y_test,random_forest_regressor.predict(X_test))
-    score=score*100
-    return jsonify({"score":score})
 
-@app.route("/train_adaboost_regressor", methods = ["GET","POST"])
-def train_adaboost_regressor():
-    global adaboost_regressor
-    
-    n_estimators = request.form.get("n_estimators")
-    learning_rate = request.form.get("learning_rate")
-    loss = request.form.get("loss")
-    
-    
-    if not n_estimators:
-        n_estimators=50
-    else:
-        n_estimators = int(n_estimators)
-        
-    if not learning_rate:
-        learning_rate=1.0
-    else:
-        learning_rate = float(learning_rate)
-        
-    if not loss:
-        loss="linear"
-        
-    
-    
-    adaboost_regressor = adaboost_regression(X_train,y_train,n_estimators=n_estimators, learning_rate=learning_rate, loss=loss)
-    return render_template("models/Boosting/Regressors/AdaboostRegressor.html",
-                           training=X_train.shape, target=X_test.shape,train_status="Model is trained Successfully",
-                           columns=training,model="adaboost_reg")
-
-@app.route("/test_adaboost_regressor", methods = ["GET","POST"])
-def test_adaboost_regressor():
-    
-    score=check_r2_score(y_test,adaboost_regressor.predict(X_test))
-    score=score*100
-    return jsonify({"score":score})
-
-@app.route("/train_gradient_boost_regressor", methods = ["GET","POST"])
-def train_gradient_boost_regressor():
-    global gradient_boost_regressor
-    
-    n_estimators = request.form.get("n_estimators")
-    learning_rate = request.form.get("learning_rate")
-    loss = request.form.get("loss")
-    criterion = request.form.get("criterion")
-    max_depth = request.form.get("max_depth")
-    max_features = request.form.get("max_features")
-    
-    
-    if not n_estimators:
-        n_estimators=100
-    else:
-        n_estimators = int(n_estimators)
-        
-    if not learning_rate:
-        learning_rate=0.1
-    else:
-        learning_rate = float(learning_rate)
-        
-    if not loss:
-        loss="squared_error"
-        
-    if not criterion:
-        criterion="friedman_mse"
-        
-    if not max_depth:
-        max_depth=3
-    else:
-        max_depth = int(max_depth)
-        
-    if not max_features:
-        max_features=None
-    elif max_features == "log2":
-        max_features = "log2"
-    elif max_features == "None":
-        max_features = None
-    elif max_features == "sqrt":
-        max_features = "sqrt"
-    else:
-        max_features = float(max_features)
-        
-    gradient_boost_regressor = gradient_boost_regression(X_train,y_train,n_estimators=n_estimators, learning_rate=learning_rate, loss=loss, criterion=criterion, max_depth=max_depth, max_features=max_features)
-    return render_template("models/Boosting/Regressors/GradientBoostRegressor.html",
-                           training=X_train.shape, target=X_test.shape,train_status="Model is trained Successfully",
-                           columns=training,model="gradient_boost_reg")
-
-@app.route("/test_gradient_boost_regressor", methods = ["GET","POST"])
-def test_gradient_boost_regressor():
-    
-    score=check_r2_score(y_test,gradient_boost_regressor.predict(X_test))
-    score=score*100
-    return jsonify({"score":score})
-
-@app.route("/train_xgboost_regressor", methods = ["GET","POST"])
-def train_xgboost_regressor():
-    global xgboost_regressor
-    
-    xgboost_regressor=xgboost_regression(X_train,y_train)
-    return render_template("models/Boosting/Regressors/XgboostRegressor.html",
-                           training=X_train.shape, target=X_test.shape,train_status="Model is trained Successfully",
-                           columns=training,model="xgboost_reg")
-    
-@app.route("/test_xgboost_regressor", methods = ["GET","POST"])
-def test_xgboost_regressor():
-        
-        score=check_r2_score(y_test,xgboost_regressor.predict(X_test))
-        score=score*100
-        return jsonify({"score":score})
-    
-@app.route("/train_knn_regressor", methods = ["GET","POST"])
-def train_knn_regressor():
-    global knn_regressor
-    
-    n_neighbors = request.form.get("n_neighbors")
-    weights = request.form.get("weights")
-    algorithm = request.form.get("algorithm")
-    leaf_size = request.form.get("leaf_size")
-    p = request.form.get("p")
-    
-    if not n_neighbors:
-        n_neighbors=5
-    else:
-        n_neighbors = int(n_neighbors)
-        
-    if not weights:
-        weights="uniform"
-    
-        
-    if not algorithm:
-        algorithm="auto"
-        
-    if not leaf_size:
-        leaf_size=30
-    else:
-        leaf_size = int(leaf_size)
-        
-    if not p:
-        p=2
-    else:
-        p = int(p)
-        
-    knn_regressor=knn_regression(X_train,y_train,n_neighbors=n_neighbors, weights=weights, algorithm=algorithm, leaf_size=leaf_size, p=p)
-    return render_template("models/KNearestNeighbours/KNNRegressor.html",
-                           target=target, trains=training,train_status="Model is trained Successfully",
-                           columns=training,model = "knn_reg")
-    
-@app.route("/test_knn_regressor", methods = ["GET","POST"])
-def test_knn_regressor():
-        
-        score=check_r2_score(y_test,knn_regressor.predict(X_test))
-        score=score*100
-        return jsonify({"score":score})
-
-    
+  
 
 
 @app.route("/train_naive_bayes_classifier", methods = ["GET","POST"])
@@ -998,61 +679,10 @@ def gbarplot():
     return render_template("Graph/graph3.html", graph = "static/images/GraphTool/gbarplot.png", message = "Grouped bar plot plotted successfully")
 
 
-@app.route("/predict_decision_tree_reg", methods = ["GET","POST"])
-def predict_decision_tree_reg():
-    
-    data = request.form.getlist("data")
-    data = [float(d) for d in data]
-    score = decision_tree_regressor.predict([data])
-    return render_template("Prediction/prediction.html", modelname = "Decision Tree Regression", prediction=score[0])
 
-@app.route("/predict_support_vector_reg", methods = ["GET","POST"])
-def predict_svr():
-    
-    data = request.form.getlist("data")
-    data = [float(d) for d in data]
-    score = support_vector_regressor.predict([data])
-    return render_template("Prediction/prediction.html", modelname = "Support Vector Regression", prediction=score[0])
 
-@app.route("/predict_random_forest_reg", methods = ["GET","POST"])
-def predict_random_forest_reg():
-    
-    data = request.form.getlist("data")
-    data = [float(d) for d in data]
-    score = random_forest_regressor.predict([data])
-    return render_template("Prediction/prediction.html", modelname = "Random Forest Regression", prediction=score[0])
 
-@app.route("/predict_knn_reg", methods = ["GET","POST"])
-def predict_knn_reg():
-    
-    data = request.form.getlist("data")
-    data = [float(d) for d in data]
-    score = knn_regressor.predict([data])
-    return render_template("Prediction/prediction.html", modelname = "K Nearest Neighbors Regression", prediction=score[0])
 
-@app.route("/predict_adaboost_reg", methods = ["GET","POST"])
-def predict_adaboost_reg():
-    
-    data = request.form.getlist("data")
-    data = [float(d) for d in data]
-    score = adaboost_regressor.predict([data])
-    return render_template("Prediction/prediction.html", modelname = "AdaBoost Regression", prediction=score[0])
-
-@app.route("/predict_gradient_boost_reg", methods = ["GET","POST"])
-def predict_gradient_boosting_reg():
-    
-    data = request.form.getlist("data")
-    data = [float(d) for d in data]
-    score = gradient_boost_regressor.predict([data])
-    return render_template("Prediction/prediction.html", modelname = "Gradient Boosting Regression", prediction=score[0])
-
-@app.route("/predict_xgboost_reg", methods = ["GET","POST"])
-def predict_xgboost_reg():
-    
-    data = request.form.getlist("data")
-    data = [float(d) for d in data]
-    score = xgboost_regressor.predict([data])
-    return render_template("Prediction/prediction.html", modelname = "XGBoost Regression", prediction=score[0])
 
 
 @app.route("/predict_knn_cls", methods = ["GET","POST"])
@@ -1105,6 +735,10 @@ def predict_adaboost_cls():
 
 @app.route("/predict_gradient_boosting_cls", methods = ["GET","POST"])
 def predict_gradient_boosting_cls():
+    
+    global X_train,X_test,y_train,y_test,target,training
+    from ModelsPy.modelPage import X_train,X_test,y_train,y_test,target,training
+    
     
     data = request.form.getlist("data")
     data = [float(d) for d in data]
