@@ -54,4 +54,4 @@ def encode_1():
     global df1
     df[feature]=[encodings[x] for x in df[feature]]
     df1= df.copy()
-    return redirect(url_for("Encoding.phase3"))
+    return redirect(url_for("encoder.phase3"))
